@@ -1,0 +1,72 @@
+---
+title: "Principal Component Analysis"
+author: "Tiffany Chu"
+date: "February 5, 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+The main function in base R for PCA is called `prcomp`. Here we will use PCA to examine the food that is eaten in the UK and in Northern Ireland.
+
+Import the CSV file first (saved in project folder):
+change the row heading names from the default (x) to the listed headings
+```{r}
+x <- read.csv("UK_foods.csv", row.names = 1)
+x
+```
+
+```{r}
+barplot(as.matrix(x), beside=T, col=rainbow(nrow(x)))
+```
+
+
+Show similarities in each region:
+England on y-axis
+duplicated information on bottom left
+if they are the same, points will be on the line
+  higher on the y-axis means English people more of that category compared to x-axis country
+```{r}
+pairs(x, col=rainbow(10), pch=16)
+```
+
+transpose (x) because base R takes the rows, so transposing will put countries in rows and categories as columns
+```{r}
+pca <- prcomp( t(x))
+```
+
+```{r}
+summary(pca)
+```
+
+Summary (cumulative proportion) shows that 67% of data was captured in PC1, and 96.5% of the data was captured in PC1 and PC2.
+
+What is in the PCA object?
+```{r}
+attributes(pca)
+```
+Printing just (pca) is not very useful:
+```{r}
+pca
+```
+
+However, we know from `attributes` that "x" is where the data we are interested in is, so we use pca$x
+
+```{r}
+plot(pca$x[,1], pca$x[,2])
+```
+
+Let's put in labels and color code the countries:
+```{r}
+plot(pca$x[,1], pca$x[,2], xlab="PC1", ylab="PC2", xlim=c(-270,500))
+text(pca$x[,1], pca$x[,2], labels = colnames(x),
+  col=c("black", "red", "blue", "darkgreen"))
+```
+
+To just get the score plot:
+```{r}
+plot(pca)
+```
+
+We can also project in new data (next class)
