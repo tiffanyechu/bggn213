@@ -1,0 +1,123 @@
+---
+title: "Coronavirus Data Analysis"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Coronavirus
+
+Here we analyze infection data for the 2019 novel Coronavirus COVID-19 (2019-nCoV) epidemic. The raw data is pulled from the Johns Hopkins University Center for Systems Science and Engineering (JHU CCSE) Coronavirus repository.
+
+A CSV file is available here https://github.com/RamiKrispin/coronavirus-csv
+
+
+```{r}
+url <- "https://tinyurl.com/COVID-2019"
+virus <- read.csv(url)
+
+tail(virus)
+```
+
+> Q1. How many total infected cases are there around the world?
+
+```{r}
+total_cases <- sum(virus$cases)
+total_cases
+```
+
+Let's review the contents of the *$case* column
+
+```{r}
+table(virus$type)
+```
+
+> Q2. How many deaths linked to infected cases have there been?
+
+```{r}
+inds <- virus$type == "death"
+death_cases <- sum(virus[inds, "cases"])
+death_cases
+```
+
+> Q3. What is the overall death rate globally?
+
+Percent  death
+
+```{r}
+round(death_cases/total_cases * 100, 2)
+```
+
+> Q4. What is the death rate in Mainland China?
+
+```{r}
+# Find all the entries for Mainland China
+China.cases <- virus[virus$Country.Region == "Mainland China", ]
+
+# Sum the total number of cases for Mainland China
+sum.China.cases <- sum(China.cases$cases)
+
+# Logical for deaths linked to infected cases for Mainland China
+China.deaths <- China.cases$type == "death"
+
+# Sum the total number of deaths linked to infected cases for Mainland China
+sum.China.deaths <- sum(China.cases[China.deaths, "cases"])
+
+# Percent death
+round(sum.China.deaths/sum.China.cases * 100, 2)
+
+```
+
+> Q5. What is the death rate in Italy, Iran, and the United States?
+
+For Italy
+
+```{r}
+Italy.cases <- virus[virus$Country.Region == "Italy", ]
+
+Italy.deaths <- Italy.cases$type == "death"
+
+# Percent death
+round( (sum(Italy.cases[Italy.deaths, "cases"]) / sum(Italy.cases$cases)) * 100, 2)
+
+```
+
+For Iran
+
+```{r}
+Iran.cases <- virus[virus$Country.Region == "Iran", ]
+
+Iran.deaths <- Iran.cases$type == "death"
+
+# Percent death
+round( (sum(Iran.cases[Iran.deaths, "cases"]) / sum(Iran.cases$cases)) * 100, 2)
+
+```
+
+For United States
+
+```{r}
+US.cases <- virus[virus$Country.Region == "US", ]
+
+US.deaths <- US.cases$type == "death"
+
+# Percent death
+round( (sum(US.cases[US.deaths, "cases"]) / sum(US.cases$cases)) * 100, 2)
+```
+
+Function for death rate for country "x"
+
+```{r}
+
+coronavirus.death.rate <- function(x) {
+  country.cases <- virus[virus$Country.Region == x, ]
+  country.deaths <- country.cases$type == "death"
+  round( (sum(country.cases[country.deaths, "cases"]) / sum(country.cases$cases)) * 100, 2)
+}
+
+# Example for function `coronavirus.death.rate()` for the death rate in the US
+coronavirus.death.rate("US")
+```
+
