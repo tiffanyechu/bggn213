@@ -1,6 +1,6 @@
-# BGGN-213
+# Foundations of Bioinformatics: BGGN-213
 
-This is coursework from [BGGN-213](https://bioboot.github.io/bggn213_W20/) at University of California, San Diego.
+This is coursework from [BGGN-213](https://bioboot.github.io/bggn213_W20/) at the University of California, San Diego.
 
 - Class 05: [R Graphics and Data Visualization] (https://github.com/tiffanyechu/bggn213/tree/master/class05)
 
