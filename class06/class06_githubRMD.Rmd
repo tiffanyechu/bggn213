@@ -1,0 +1,240 @@
+---
+title: 'Class 06: R functions'
+author: "Tiffany"
+date: "January 24, 2020"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+## This is a level 2 heading.
+
+This is text **bold** with more *text*
+
+and a list of stuff with return carot
+
+- fries
+- truffles
+
+
+```{r}
+plot(1:5, col="blue", typ="o")
+```
+
+Let's insert a code chunk with the shortcut `Ctrl+Alt+i`:
+```{r}
+x <-  c(1:10)
+x
+```
+
+Here is my analysis of your new data.  It looks ok...the mean of your data is `r mean(x)`.
+
+## More on reading input files
+
+We will use the read.table() function
+```{r}
+read.table("test1.txt")
+```
+
+We will use the read.table() function.
+Look at arguments needed for this data:
+```{r}
+read.table("test1.txt", header = TRUE, sep=",")
+x <- read.table("test1.txt", header = TRUE, sep=",")
+```
+
+Alternatively, use read.csv
+```{r}
+read.csv("test1.txt")
+```
+
+```{r}
+x2 <-  read.table("test2.txt", header = TRUE, sep ="$")
+x2
+```
+
+and example 3
+
+```{r}
+read.table("test3.txt")
+```
+
+from the slides: writing functions
+
+## Our first function
+
+This is an example function named `add` with input `x` and `y`
+
+```{r}
+add <- function(x, y=1) {
+  # Sum the input x and y
+  x + y
+}
+```
+
+Let's try using it
+
+```{r}
+add(6, 4)
+```
+```{r}
+add(x=c(1,6,2), y=4)
+```
+```{r}
+add(c(1,6,2), 4)
+```
+
+range calculates the min and max
+
+```{r}
+x <- c(10,4,22,6)
+min(x)
+max(x)
+range(x )
+```
+
+
+A 2nd example function to re-scale data to lie between 0 and 10
+```{r}
+rescale <- function(x) {
+  rng <-range(x)
+  (x - rng[1]) / (rng[2] - rng[1])
+}
+```
+
+Testing the function:
+
+```{r}
+rescale(1:10)
+```
+
+```{r}
+rescale( c(1:10, 30, 100))
+```
+```{r}
+rescale( c(1:10, NA))
+```
+```{r}
+x <- c(1:10, NA)
+rng <-  range(x)
+rng
+```
+```{r}
+x <- c(1:10, NA)
+rng <-  range(x, na.rm = TRUE)
+rng
+```
+### Fix 
+```{r}
+rescale2 <-  function(x) {
+  rng <-  range (x, na.rm = TRUE)
+  (x - rng[1]) / (rng[2] - rng[1])
+}
+```
+
+
+```{r eval=FALSE}
+rescale2( c(1:10, "error example"))
+```
+
+
+
+```{r}
+rescale3 <- function(x, na.rm=TRUE, plot=FALSE) {
+  
+    rng <-range(x, na.rm=na.rm)
+    print("Hello")
+  
+  answer <-(x - rng[1]) / (rng[2] - rng[1])
+ 
+  print("is it me you are looking for?")
+  
+  if(plot) {
+    print("Please don't sing again")
+    plot(answer, typ="b", lwd=4)
+  }
+    print("I can see it in ...")
+    return(answer)
+}
+```
+
+```{r}
+rescale3(x)
+```
+
+
+### This is a level 3 heading
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+
+## WORKSHEET: Working with the bio3d package 
+
+Installation is done in console; do not do it in markdown because knitting will cause it to reinstall every time.
+
+To use the functions from any package we have installed we use `library()` function to load it.
+
+```{r}
+library(bio3d)
+```
+
+corrected the error
+trims kinase down to just the A chain where drug binds (where activity is)
+plots atom
+try to boil it down to a function, where x is kinase ID and output is plot
+```{r}
+s1 <- read.pdb("4AKE")  # kinase with drug
+s2 <- read.pdb("1AKE")  # kinase no drug
+s3 <- read.pdb("1E4Y")  # kinase with drug
+
+s1.chainA <- trim.pdb(s1, chain="A", elety="CA")
+s2.chainA <- trim.pdb(s2, chain="A", elety="CA")
+s3.chainA <- trim.pdb(s3, chain="A", elety="CA")
+
+s1.b <- s1.chainA$atom$b
+s2.b <- s2.chainA$atom$b
+s3.b <- s3.chainA$atom$b
+
+plotb3(s1.b, sse=s1.chainA, typ="l", ylab="Bfactor")
+plotb3(s2.b, sse=s2.chainA, typ="l", ylab="Bfactor")
+plotb3(s3.b, sse=s3.chainA, typ="l", ylab="Bfactor")
+```
+
+```{r}
+hc <- hclust( dist( rbind(s1.b, s2.b, s3.b) ) )
+plot(hc)
+```
+
+```{r}
+s1 <- read.pdb("4AKE")
+class(s1)
+```
+
+structure tells us it's a list of 8 things:
+```{r}
+str(s1)
+```
+
+to look at amino acid sequence
+```{r}
+s1$seqres
+```
+
+to change amino acid sequence to single letter abbreviation
+```{r}
+aa321(s1$seqres)
+```
+
+let's put it all in one plot
+```{r}
+
+plotb3(s1.b, sse=s1.chainA, typ="l", ylab="Bfactor")
+points(s2.b, col="blue", typ="l")
+points(s3.b, col="red", typ="l", lwd=3)
+```
+

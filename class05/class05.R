@@ -1,8 +1,8 @@
-#' ---
-#' title: "Class 5"
-#' author: "Tiffany Chu"
-#' date: "January 24, 2020"
-#' output: github_document
+---
+title: "Class 5: Data Visualization in R"
+date: "January 24, 2020"
+output: github_document
+---
 # Class 5
 # Data visualization and graphics in R
 
