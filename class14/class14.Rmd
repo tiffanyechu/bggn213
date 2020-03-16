@@ -1,0 +1,145 @@
+---
+title: "Untitled"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 
+
+```{r}
+counts <- read.csv("airway_scaledcounts.csv", stringsAsFactors = FALSE)
+metadata <-  read.csv("airway_metadata.csv", stringsAsFactors = FALSE)
+```
+Q. How many genes are we dealing with?
+```{r}
+nrow(counts)
+```
+
+We will compare the control versus the treated count data contained in `counts`. We will first extract the control columns by looking up their colnames in the `metadata` object.
+
+```{r}
+# Accesss the "control" metadata IDs only
+
+#metadata
+#metadata$dex == "control"
+
+control <- metadata[metadata$dex =="control", ]
+control
+```
+
+```{r}
+# Access the count columns with control$id
+counts[ , control$id]
+```
+
+```{r}
+# Find the mean value for each gene (i.e. each row)
+control.mean <- rowSums(counts[ , control$id]) / nrow(control)
+control.mean
+```
+
+
+```{r}
+# Access the mean values of treated samples
+treated <- metadata[metadata$dex == "treated", ]
+counts[ , treated$id]
+treated.mean <- rowSums(counts[ , treated$id]) / nrow(treated)
+```
+
+Control means versus treated means:
+
+```{r}
+mycounts <- data.frame(control.mean, treated.mean)
+```
+
+Plot data for quick check:
+```{r}
+plot(mycounts)
+```
+
+Heavily skewed data, so use log
+
+```{r}
+plot(mycounts, log="x")
+```
+
+It appears that we have some zero count genes
+```{r}
+View(mycounts)
+```
+
+Since we cannot determine anything from zero count genes in this dataset, we will remove them.
+
+```{r}
+to.rm <- 	unique(which(mycounts == 0, arr.ind = TRUE)[ , "row"])
+newcounts <- mycounts[-to.rm, ]
+```
+
+Q. How many genes do we have now?
+
+```{r}
+nrow(newcounts)
+```
+
+Here we calculate log2foldchange, add it to our meancounts data.frame and inspect the results either with the `head()` or the `View()` function.
+
+```{r}
+newcounts$log2fc <- log2(newcounts[,"treated.mean"]/newcounts[,"control.mean"])
+head(newcounts)
+```
+
+A common rule of thumb in the field is to use a log2fc of greater than +2 as *up-regulated* and less than -2 as *down-regulated*.
+
+Q. How many of the genes in this dataset are up-regulated upon this drug treatment?
+
+```{r}
+sum(newcounts$log2fc > 2)
+```
+
+Q. How many genes are down-regulated at this threshold?
+
+```{r}
+sum(newcounts$log2fc < -2)
+```
+
+## Using DESeq2 for Analysis
+
+```{r}
+library(DESeq2)
+```
+
+Set up the object required by DEseq
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData=counts, 
+                              colData=metadata, 
+                              design=~dex, 
+                              tidy=TRUE)
+dds
+```
+
+Run the main DESeq calculation
+
+```{r}
+dds <- DESeq(dds)
+```
+
+```{r}
+res <- results(dds)
+res
+```
+
+## Volanco plots
+
+Plot of log2fc vs p-value
+
+```{r}
+plot(res$log2FoldChange, -log(res$padj), col="gray")
+abline(v=c(-2, +2), lty=2)
+# abline(h=log(0.05), lty=2) new package has alpha as the p-value argument, put in alpha=0 to see all the data because otherwise alpha automatically applies p-value cutoff
+
+```
+
